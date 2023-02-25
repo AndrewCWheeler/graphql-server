@@ -3,9 +3,7 @@ import { startStandaloneServer } from "@apollo/server/standalone";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 dotenv.config();
-
 const { DB_URI, DB_NAME } = process.env;
-
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
 // your data.
@@ -25,46 +23,38 @@ const typeDefs = `#graphql
     books: [Book]
   }
 `;
-
 const books = [
-  {
-    title: "The Awakening",
-    author: "Kate Chopin",
-  },
-  {
-    title: "City of Glass",
-    author: "Paul Auster",
-  },
+    {
+        title: "The Awakening",
+        author: "Kate Chopin",
+    },
+    {
+        title: "City of Glass",
+        author: "Paul Auster",
+    },
 ];
-
 // Resolvers define how to fetch the types defined in your schema.
 // This resolver retrieves books from the "books" array above.
 const resolvers = {
-  Query: {
-    books: () => {
-      return books;
+    Query: {
+        books: () => books,
     },
-  },
 };
-
 const start = async () => {
-  const client = new MongoClient(DB_URI);
-  await client.connect();
-  const db = client.db(DB_NAME);
-
-  const context = {
-    db,
-  };
-  console.log(context);
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    context,
-  });
-  const { url } = await startStandaloneServer(server, {
-    listen: { port: 4000 },
-  });
-  console.log(`🚀 Server ready at: ${url}`);
+    const client = new MongoClient(DB_URI);
+    await client.connect();
+    const db = client.db(DB_NAME);
+    const context = {
+        db,
+    };
+    console.log(context);
+    const server = new ApolloServer({
+        typeDefs,
+        resolvers,
+    });
+    const { url } = await startStandaloneServer(server, {
+        listen: { port: 4000 },
+    });
+    console.log(`🚀 Server ready at: ${url}`);
 };
-
 start();
