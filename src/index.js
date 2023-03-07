@@ -6,45 +6,68 @@ dotenv.config();
 
 const { DB_URI, DB_NAME } = process.env;
 
-// A schema is a collection of type definitions (hence "typeDefs")
-// that together define the "shape" of queries that are executed against
-// your data.
 const typeDefs = `#graphql
-  # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
-
-  # This "Book" type defines the queryable fields for every book in our data source.
-  type Book {
-    title: String
-    author: String
+  type Query {
+    myTaskLists: [TaskList!]!
   }
 
-  # The "Query" type is special: it lists all of the available queries that
-  # clients can execute, along with the return type for each. In this
-  # case, the "books" query returns an array of zero or more Books (defined above).
-  type Query {
-    books: [Book]
+  type Mutation {
+    signUp(input: SignUpInput): AuthUser!
+    singIn(input: SignInInput): AuthUser!
+  }
+
+  input SignUpInput {
+    email: String!
+    password: String!
+    name: String!
+    avatar: String
+  }
+
+  input SignInInput {
+    email: String!
+    password: String!
+  }
+
+  type AuthUser {
+    user: User!
+    token: String!
+  }
+
+  type User {
+    id: ID!
+    name: String!
+    email: String!
+    avatar: String
+  }
+  type TaskList {
+    id: ID!
+    createdAt: String!
+    title: String!
+    progress: Float!
+
+    users: [User!]!
+    todos: [ToDo!]!
+  }
+  type ToDo {
+    id: ID!
+    content: String!
+    isCompleted: Boolean!
+
+    # taskListId: ID!
+    taskList: TaskList
   }
 `;
 
-const books = [
-  {
-    title: "The Awakening",
-    author: "Kate Chopin",
-  },
-  {
-    title: "City of Glass",
-    author: "Paul Auster",
-  },
-];
-
-// Resolvers define how to fetch the types defined in your schema.
-// This resolver retrieves books from the "books" array above.
 const resolvers = {
   Query: {
-    books: () => {
-      return books;
-    },
+    myTaskLists: () => [],
   },
+  // Mutation: {
+  //   signUp: (_, { input }) => {
+  //     console.log(input);
+  //   },
+  //   signIn: () => {},
+  // },
 };
 
 const start = async () => {
@@ -55,7 +78,6 @@ const start = async () => {
   const context = {
     db,
   };
-  console.log(context);
   const server = new ApolloServer({
     typeDefs,
     resolvers,
