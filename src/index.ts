@@ -1,7 +1,8 @@
-import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
-import { MongoClient } from "mongodb";
-import dotenv from "dotenv";
+import { ApolloServer } from '@apollo/server';
+import { startStandaloneServer } from '@apollo/server/standalone';
+import { MongoClient } from 'mongodb';
+import dotenv from 'dotenv';
+import bcrypt from 'bcryptjs';
 dotenv.config();
 
 const { DB_URI, DB_NAME } = process.env;
@@ -58,31 +59,36 @@ const typeDefs = `#graphql
   }
 `;
 
+const client = new MongoClient(DB_URI, {});
+
 const resolvers = {
   Query: {
     myTaskLists: () => [],
   },
-  // Mutation: {
-  //   signUp: (_, { input }) => {
-  //     console.log(input);
-  //   },
-  //   signIn: () => {},
-  // },
+  Mutation: {
+    signUp: async (_parent: any, { input }) => {
+      await client.connect();
+      const db = client.db(DB_NAME);
+      const hashedPassword = bcrypt.hashSync(input.password);
+      console.log(hashedPassword);
+      const user = {
+        ...input,
+        password: hashedPassword,
+      };
+      // save to database
+      const result = await db.collection('Users').insertOne(user);
+      console.log(result);
+    },
+    // signIn: () => {},
+  },
 };
 
-const start = async () => {
-  const client = new MongoClient(DB_URI);
-  await client.connect();
-  const db = client.db(DB_NAME);
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
 
-  const context = {
-    db,
-  };
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    context,
-  });
+const start = async () => {
   const { url } = await startStandaloneServer(server, {
     listen: { port: 4000 },
   });

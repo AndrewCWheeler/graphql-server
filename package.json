@@ -5,16 +5,21 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "compile": "tsc",
+    "start": "npm run compile && node ./dist/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@apollo/server": "^4.3.2",
+    "bcryptjs": "^2.4.3",
     "dotenv": "^16.0.3",
     "graphql": "^16.6.0",
     "mongodb": "^4.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.5",
+    "typescript": "^5.0.2"
   }
 }
