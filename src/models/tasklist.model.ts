@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const TaskListSchema = mongoose.Schema(
+const TaskListSchema = new mongoose.Schema(
   {
     title: {
       type: String,

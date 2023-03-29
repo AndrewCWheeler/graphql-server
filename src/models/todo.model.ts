@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const ToDoSchema = mongoose.Schema(
+const ToDoSchema = new mongoose.Schema(
   {
     content: {
       type: String,
