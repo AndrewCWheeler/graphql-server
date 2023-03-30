@@ -1,8 +1,3 @@
-import { typeDefs } from './models/typeDefs.js';
-import { resolvers } from './resolvers.js';
-import db from './config/mongoose.config.js';
-
-// npm install @apollo/server express graphql cors body-parser
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
@@ -10,6 +5,9 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import pkg from 'body-parser';
+import { typeDefs } from './models/typeDefs.js';
+import { resolvers } from './resolvers.js';
+import db from './config/mongoose.config.js';
 
 const { json } = pkg;
 
@@ -30,7 +28,7 @@ app.use(
   cors<cors.CorsRequest>(),
   json(),
   expressMiddleware(server, {
-    context: async ({ req }) => ({
+    context: async ({ req }): Promise<MyContext> => ({
       token: req.headers.authorization,
     }),
   })
