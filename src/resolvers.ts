@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import authenticate from './middleware/jwt.middleware.js';
 dotenv.config();
-// import { ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 const { JWT_SECRET } = process.env;
 
 // interface MyResolverArgs {
@@ -64,12 +64,14 @@ export const resolvers = {
       if (!user) {
         throw new Error('Authentication Error. Please sign in');
       }
+      console.log(user);
       const newTaskList = new TaskList({
         title,
         progress: 0,
         users: [user],
       });
       const result = await newTaskList.save();
+      console.log(`result: ${result}`);
       return result;
     },
 
@@ -87,7 +89,8 @@ export const resolvers = {
           },
         },
         { new: true }
-      );
+      ).populate('users');
+      console.log(result);
       return result;
     },
 

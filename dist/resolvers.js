@@ -5,7 +5,6 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import authenticate from './middleware/jwt.middleware.js';
 dotenv.config();
-// import { ObjectId } from 'mongodb';
 const { JWT_SECRET } = process.env;
 // interface MyResolverArgs {
 //   id: ObjectId;
@@ -56,12 +55,14 @@ export const resolvers = {
             if (!user) {
                 throw new Error('Authentication Error. Please sign in');
             }
+            console.log(user);
             const newTaskList = new TaskList({
                 title,
                 progress: 0,
                 users: [user],
             });
             const result = await newTaskList.save();
+            console.log(`result: ${result}`);
             return result;
         },
         updateTaskList: async (_, { id, title }, { token }) => {
@@ -73,7 +74,8 @@ export const resolvers = {
                 $set: {
                     title,
                 },
-            }, { new: true });
+            }, { new: true }).populate('users');
+            console.log(result);
             return result;
         },
         // May need these if not using Mongoose:
