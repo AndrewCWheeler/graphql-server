@@ -3,13 +3,21 @@ import { gql } from 'graphql-tag';
 export const typeDefs = gql`
   type Query {
     myTaskLists: [TaskList!]!
+    getTaskList(id: ID!): TaskList!
   }
 
   type Mutation {
     signUp(input: SignUpInput!): AuthUser!
     signIn(input: SignInInput!): AuthUser!
+
     createTaskList(title: String!): TaskList!
     updateTaskList(id: ID!, title: String!): TaskList!
+    deleteTaskList(id: ID!): Boolean!
+    addUserToTaskList(taskListId: ID!, userId: ID!): TaskList
+
+    createToDo(content: String!, taskListId: ID!): ToDo!
+    updateToDo(id: ID!, content: String, isCompleted: Boolean): ToDo!
+    deleteToDo(id: ID!): Boolean!
   }
 
   input SignUpInput {
@@ -50,7 +58,7 @@ export const typeDefs = gql`
     id: ID!
     content: String!
     isCompleted: Boolean!
-
+    createdAt: String!
     # taskListId: ID!
     taskList: TaskList
   }

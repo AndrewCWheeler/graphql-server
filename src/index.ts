@@ -5,16 +5,22 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import pkg from 'body-parser';
-import { typeDefs } from './models/typeDefs.js';
-import { resolvers } from './resolvers.js';
 import db from './config/mongoose.config.js';
+import { resolvers } from './resolvers.js';
+import { typeDefs } from './models/typeDefs.js';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
-const { json } = pkg;
+dotenv.config();
+const { JWT_SECRET } = process.env;
 
 interface MyContext {
   token?: String;
 }
+const getToken = (user: any) =>
+  jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7 days' });
 
+const { json } = pkg;
 const app = express();
 const httpServer = http.createServer(app);
 const server = new ApolloServer<MyContext>({

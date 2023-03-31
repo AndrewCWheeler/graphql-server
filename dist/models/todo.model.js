@@ -6,10 +6,12 @@ const ToDoSchema = new mongoose.Schema({
     },
     isCompleted: {
         type: Boolean,
+        default: false,
     },
     taskList: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'TaskList',
     },
 }, { timestamps: true });
-export const ToDo = mongoose.model('ToDo', ToDoSchema);
+const ToDo = mongoose.model('ToDo', ToDoSchema);
+export default ToDo;
