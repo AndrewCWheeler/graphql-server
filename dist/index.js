@@ -8,11 +8,10 @@ import pkg from 'body-parser';
 import db from './config/mongoose.config.js';
 import { resolvers } from './resolvers.js';
 import { typeDefs } from './models/typeDefs.js';
-import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
-const { JWT_SECRET } = process.env;
-const getToken = (user) => jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7 days' });
+// const getToken = (user: any) =>
+//   jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7 days' });
 const { json } = pkg;
 const app = express();
 const httpServer = http.createServer(app);

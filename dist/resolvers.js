@@ -1,3 +1,4 @@
+// resolvers.ts
 import bcrypt from 'bcryptjs';
 import User from './models/user.model.js';
 import TaskList from './models/taskList.model.js';
@@ -17,7 +18,9 @@ export const resolvers = {
     Query: {
         myTaskLists: async (_, args, { token }) => {
             const user = await authenticate(token);
-            const taskLists = await TaskList.find({ users: user._id });
+            const taskLists = await TaskList.find({
+                users: user._id,
+            }).populate('todos');
             return taskLists;
         },
         getTaskList: async (_, { id }, { token }) => {
@@ -25,12 +28,17 @@ export const resolvers = {
             if (!user) {
                 throw new Error('Authentication Error. Please sign in');
             }
-            const result = await (await TaskList.findOne({ _id: id })).populate('users');
+            // const result = await (
+            //   await TaskList.findOne({ _id: id })
+            // ).populate('users');
+            // console.log(result);
+            const result = await TaskList.findOne({ _id: id });
             return result;
         },
     },
     Mutation: {
         signUp: async (_, { input }) => {
+            console.log('Got to signUp Mutation');
             const hashedPassword = bcrypt.hashSync(input.password);
             const newUser = new User({
                 ...input,
@@ -44,13 +52,11 @@ export const resolvers = {
             };
         },
         signIn: async (_, { input }, context) => {
-            const { authenticatedUser } = context;
             const user = await User.findOne({ email: input.email });
             if (!user) {
                 throw new Error('Invalid credentials!');
             }
             const isPasswordCorrect = bcrypt.compareSync(input.password, user.password);
-            user && console.log(`authenticatedUser: ${authenticatedUser}`);
             if (!isPasswordCorrect) {
                 throw new Error('Invalid credentials');
             }
@@ -72,6 +78,7 @@ export const resolvers = {
                 users: [user],
             });
             const result = await newTaskList.save();
+            console.log(result);
             return result;
         },
         updateTaskList: async (_, { id, title }, { token }) => {
@@ -84,7 +91,6 @@ export const resolvers = {
                     title,
                 },
             }, { new: true }).populate('users');
-            console.log(result);
             return result;
         },
         addUserToTaskList: async (_, { taskListId, userId }, { token }) => {
@@ -103,7 +109,6 @@ export const resolvers = {
                     users: userId,
                 },
             }, { new: true }).populate('users');
-            console.log(result);
             return result;
         },
         deleteTaskList: async (_, { id }, { token }) => {
@@ -111,10 +116,8 @@ export const resolvers = {
             if (!user) {
                 throw new Error('Authentication Error. Please sign in');
             }
-            const result = await TaskList.deleteOne({ _id: id });
-            const deletedCount = result.deletedCount;
-            console.log(deletedCount);
-            return deletedCount === 1;
+            const result = await TaskList.findByIdAndDelete({ _id: id });
+            return result;
         },
         createToDo: async (_, { content, taskListId }, { token }) => {
             const user = await authenticate(token);
@@ -129,7 +132,6 @@ export const resolvers = {
             const result = await (await newToDo.save()).populate({
                 path: 'taskList',
             });
-            console.log(`result: ${result}`);
             return result;
         },
         updateToDo: async (_, data, { token }) => {
@@ -148,10 +150,9 @@ export const resolvers = {
             if (!user) {
                 throw new Error('Authentication Error. Please sign in');
             }
-            const result = await ToDo.deleteOne({ _id: id });
-            const deletedCount = result.deletedCount;
-            console.log(deletedCount);
-            return deletedCount === 1;
+            const result = await ToDo.findByIdAndDelete({ _id: id });
+            // const deletedCount: number = result.deletedCount;
+            return result;
         },
     },
     User: {
@@ -165,7 +166,7 @@ export const resolvers = {
             if (todos.length === 0) {
                 return 0;
             }
-            return (100 * completed.length) / todos.length;
+            return completed.length / todos.length;
         },
         users: async ({ userIds }) => {
             return Promise.all(userIds.map((userId) => User.findOne({ _id: userId })));

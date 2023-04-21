@@ -1,3 +1,4 @@
+// typeDefs.ts
 import { gql } from 'graphql-tag';
 export const typeDefs = gql `
   type Query {
@@ -11,12 +12,12 @@ export const typeDefs = gql `
 
     createTaskList(title: String!): TaskList!
     updateTaskList(id: ID!, title: String!): TaskList!
-    deleteTaskList(id: ID!): Boolean!
+    deleteTaskList(id: ID!): TaskList!
     addUserToTaskList(taskListId: ID!, userId: ID!): TaskList
 
-    createToDo(content: String!, taskListId: ID!): ToDo!
+    createToDo(content: String, taskListId: ID!): ToDo!
     updateToDo(id: ID!, content: String, isCompleted: Boolean): ToDo!
-    deleteToDo(id: ID!): Boolean!
+    deleteToDo(id: ID!): ToDo!
   }
 
   input SignUpInput {
@@ -55,7 +56,7 @@ export const typeDefs = gql `
 
   type ToDo {
     id: ID!
-    content: String!
+    content: String
     isCompleted: Boolean!
     createdAt: String!
     # taskListId: ID!

@@ -1,3 +1,5 @@
+// resolvers.ts
+
 import bcrypt from 'bcryptjs';
 import User from './models/user.model.js';
 import TaskList from './models/taskList.model.js';
@@ -21,7 +23,9 @@ export const resolvers = {
   Query: {
     myTaskLists: async (_: any, args: any, { token }) => {
       const user = await authenticate(token);
-      const taskLists: any[] = await TaskList.find({ users: user._id });
+      const taskLists: any[] = await TaskList.find({
+        users: user._id,
+      }).populate('todos');
       return taskLists;
     },
     getTaskList: async (_: any, { id }, { token }) => {
@@ -29,15 +33,18 @@ export const resolvers = {
       if (!user) {
         throw new Error('Authentication Error. Please sign in');
       }
-      const result = await (
-        await TaskList.findOne({ _id: id })
-      ).populate('users');
+      // const result = await (
+      //   await TaskList.findOne({ _id: id })
+      // ).populate('users');
+      // console.log(result);
+      const result = await TaskList.findOne({ _id: id });
 
       return result;
     },
   },
   Mutation: {
     signUp: async (_: any, { input }) => {
+      console.log('Got to signUp Mutation');
       const hashedPassword = bcrypt.hashSync(input.password);
       const newUser = new User({
         ...input,
@@ -51,7 +58,6 @@ export const resolvers = {
       };
     },
     signIn: async (_: any, { input }, context: any) => {
-      const { authenticatedUser } = context;
       const user = await User.findOne({ email: input.email });
       if (!user) {
         throw new Error('Invalid credentials!');
@@ -60,7 +66,6 @@ export const resolvers = {
         input.password,
         user.password
       );
-      user && console.log(`authenticatedUser: ${authenticatedUser}`);
       if (!isPasswordCorrect) {
         throw new Error('Invalid credentials');
       }
@@ -83,6 +88,7 @@ export const resolvers = {
         users: [user],
       });
       const result = await newTaskList.save();
+      console.log(result);
       return result;
     },
     updateTaskList: async (_: any, { id, title }, { token }) => {
@@ -99,7 +105,6 @@ export const resolvers = {
         },
         { new: true }
       ).populate('users');
-      console.log(result);
       return result;
     },
     addUserToTaskList: async (_: any, { taskListId, userId }, { token }) => {
@@ -122,7 +127,6 @@ export const resolvers = {
         },
         { new: true }
       ).populate('users');
-      console.log(result);
       return result;
     },
     deleteTaskList: async (_: any, { id }, { token }) => {
@@ -130,10 +134,8 @@ export const resolvers = {
       if (!user) {
         throw new Error('Authentication Error. Please sign in');
       }
-      const result = await TaskList.deleteOne({ _id: id });
-      const deletedCount: number = result.deletedCount;
-      console.log(deletedCount);
-      return deletedCount === 1;
+      const result = await TaskList.findByIdAndDelete({ _id: id });
+      return result;
     },
 
     createToDo: async (_: any, { content, taskListId }, { token }) => {
@@ -151,7 +153,6 @@ export const resolvers = {
       ).populate({
         path: 'taskList',
       });
-      console.log(`result: ${result}`);
       return result;
     },
     updateToDo: async (_: any, data: any, { token }) => {
@@ -173,10 +174,9 @@ export const resolvers = {
       if (!user) {
         throw new Error('Authentication Error. Please sign in');
       }
-      const result = await ToDo.deleteOne({ _id: id });
-      const deletedCount: number = result.deletedCount;
-      console.log(deletedCount);
-      return deletedCount === 1;
+      const result = await ToDo.findByIdAndDelete({ _id: id });
+      // const deletedCount: number = result.deletedCount;
+      return result;
     },
   },
 
@@ -192,7 +192,7 @@ export const resolvers = {
       if (todos.length === 0) {
         return 0;
       }
-      return (100 * completed.length) / todos.length;
+      return completed.length / todos.length;
     },
     users: async ({ userIds }) => {
       return Promise.all(

@@ -4,7 +4,6 @@ const ToDoSchema = new mongoose.Schema(
   {
     content: {
       type: String,
-      required: true,
     },
     isCompleted: {
       type: Boolean,
